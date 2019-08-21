@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="af52cabc-dde8-40d5-9ea7-b71ef530060a" >
+		<salesforce:cached-basic-connection username="jaya@open-logix.com" password="Venu@naresh7799" securityToken="jhJdK5uK1k8x3FWpNvEC7Yzbh" />
+	</salesforce:sfdc-config>
+	<file:config name="File_Config1" doc:name="File Config" doc:id="e9d065ba-8c35-4b8e-95bf-3d738fff5aad" >
+		<file:connection workingDir="C:\Users\jayas\OneDrive\Desktop" />
+	</file:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d38cfb88-4cd8-43ca-a8bf-f3ae04b5f9b9" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="4ea01de1-eb4c-4b4e-9193-4b966a999b95" >
+		<http:request-connection host="localhost" port="8081" connectionIdleTimeout="1000000000">
+		</http:request-connection>
+	</http:request-config>
+	<flow name="sf-appFlow" doc:id="7d4c0dad-c62e-4810-aa82-3ac1b3346f59" >
+		<http:listener doc:name="Listener" doc:id="4b884cc8-6514-4796-989e-fe616feaf065" path="/sfapp" config-ref="HTTP_Listener_config"/>
+		<ee:transform doc:name="Transform Message" doc:id="13503a85-8e97-4805-a5d1-3444ac9e2bbd">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Name: payload.accountname,
+	Phone: payload.phone,
+	
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create doc:name="Create" doc:id="b66ea48b-6c24-4336-8c7e-af123eb25cc6" type="Account" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="b141621d-9fa3-46f0-8405-92859c015261" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="4f8b381f-e8a3-4d6d-b657-2ff7b8cb61ce" message="#[payload]"/>
+	</flow>
+	<flow name="sf-appFlow1" doc:id="a3d782e0-10e0-4674-bdfa-c00ffaa79cae" >
+		<http:listener doc:name="Listener" doc:id="c2d3d244-3d29-43b6-a1d6-1105eec69c7a" path="/sfupapp" config-ref="HTTP_Listener_config"/>
+		<ee:transform doc:name="Transform Message" doc:id="19c10a2b-5aee-49bc-84c2-c846accb4d16" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+		LastName: payload.cname,
+		OtherState: payload.cstate,
+		Email: payload.cphone,
+		AccountId: payload.cuserid
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert type="Contact" doc:name="Upsert" doc:id="7c4d6985-44f8-4267-b26d-66153cebd520" externalIdFieldName="Email" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="e4d6b880-832b-4679-8fcf-e51b18cc0abf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="filetransformFlow" doc:id="1cd9a4a0-a2b1-4e43-9778-a079783fb503" >
+		<http:listener doc:name="Listener" doc:id="0a80aac4-29b1-4894-9405-77ef373d0c64" path="/file" config-ref="HTTP_Listener_config"/>
+		<file:read doc:name="Read" doc:id="f1b7254b-4f6f-4760-b556-6b5dcc60c643" config-ref="File_Config1" path="C:\Users\jayas\OneDrive\Desktop\read.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="35fd2fb8-d09c-4638-8f9c-6f098492a916" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	cuserid: payload01.id,
+	cname: payload01.name,
+	cstate: payload01.state,
+	cphone: payload01.email
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="edd7fc84-4755-46ba-829e-cdfc969cc5e9" >
+			<http:request method="POST" doc:name="Request" doc:id="1d40e368-8f93-4d3d-bd2f-43f3108b9493" config-ref="HTTP_Request_configuration" path="/sfupapp"/>
+
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="8a79e904-0777-4395-a4b7-316f0c63a4e1" message="payload" />
+	</flow>
+</mule>

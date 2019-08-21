@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="data" format="json">
+      <types:shape format="weave" example="examples/data.json"><![CDATA[%dw 2.0
+
+type data = {|
+  name: String, 
+  phone: String, 
+  city: String, 
+  email: String
+|} {"example": "{\"name\":\"jaya\",\"phone\":\"567788987\",\"city\":\"vizag\",\"email\":\"jaya@gmail.com\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="edata" format="json">
+      <types:shape format="weave" example="examples/emp.json"><![CDATA[%dw 2.0
+
+type edata = Array<{|  name: String,   phone: String,   state: String,   id: String,   "type": String|}> {"example": "[{\"name\":\"jaya\",\"phone\":\"5757869\",\"state\":\"Michigan\",\"id\":\"23\",\"type\":\"Employee\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="cdata" format="json">
+      <types:shape format="weave" example="examples/contactdata.json"><![CDATA[%dw 2.0
+
+type cdata = {|
+  cname: String, 
+  cphone: String, 
+  cstate: String, 
+  cuserid: String
+|} {"example": "{\"cname\":\"pravalli\",\"cphone\":\"97899856\",\"cstate\":\"New jersey\",\"cuserid\":\"valli@gmail.com\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="adata" format="json">
+      <types:shape format="weave" example="examples/accountdata.json"><![CDATA[%dw 2.0
+
+type adata = {|
+  phone: String, 
+  accountname: String
+|} {"example": "{\"phone\":\"97899856\",\"accountname\":\"OpenLogix\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="csvdata" format="csv">
+      <types:shape format="weave" example="examples/read.csv"><![CDATA[%dw 2.0
+
+type csvdata = Array<{|  id: String,   name: String,   state: String,   email: String|}>
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="jsondata" format="json">
+      <types:shape format="weave" example="examples/reading.json"><![CDATA[%dw 2.0
+
+type jsondata = {|
+  cuserid: String, 
+  cname: String, 
+  cstate: String, 
+  cphone: String
+|} {"example": "{\"cuserid\":\"0013i000005PcG5AAK\",\"cname\":\"adi\",\"cstate\":\"ohio\",\"cphone\":\"adi@gmail.com\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#13503a85-8e97-4805-a5d1-3444ac9e2bbd">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="adata"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#19c10a2b-5aee-49bc-84c2-c846accb4d16">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="cdata"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#35fd2fb8-d09c-4638-8f9c-6f098492a916">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="csvdata"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="jsondata"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>
